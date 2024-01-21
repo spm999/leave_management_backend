@@ -29,7 +29,7 @@ router.post('/:empid/leaveRequest', authenticateToken, async (req, res) => {
 
         const emailOptions = {
             from: 'mbrrkn@gmail.com',
-            to: 'msurya9701@gmail.com',
+            to: 'social@goismo.com',
             subject: 'Leave Request Created',
             text: `Leave request created for employee ID ${employeeId}. 
                    Leave Type: ${leaveType}, 
