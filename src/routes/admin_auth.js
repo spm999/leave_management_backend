@@ -2,50 +2,56 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const cors = require('cors');
+// Enable CORS
 
 const secretKey = process.env.JWT_SECRET
 const router = express.Router();
-const Employee = require('../models/Employee');
+const Admin = require('../models/Admin');
+router.use(cors());
 
 // Sign Up route
 router.post('/signup', async (req, res) => {
-    const { name, email, organization, password } = req.body;
+    const { name, email, password } = req.body;
 
     try {
         // Check if the user with the provided email already exists
-        const existingUser = await Employee.findOne({ email });
+        const existingUser = await Admin.findOne({ email });
 
         if (existingUser) {
-            return res.status(409).json({ message: 'Employee with this email already exists' });
+            return res.status(409).json({ message: 'Admin with this email already exists' });
         }
 
         // Hash the password before saving it to the database
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user
-        const newEmployee = new Employee({
+        const newAdmin = new Admin({
             name,
             email,
-            organization,
             password
             // Additional fields from my schema
         });
 
         // Save the user to the database
-        await newEmployee.save();
-
-        // console.log('Input Password:', password);
-        // console.log('Stored Hashed Password:', hashedPassword);
-        // console.log('Is Password Valid:', isPasswordValid);
+        await newAdmin.save();
 
         // Generate and send a JWT token for the newly created user
-        const token = jwt.sign({ EmployeeId: newEmployee._id }, secretKey, { expiresIn: '9h' });
+        const token = jwt.sign({ AdminId: newAdmin._id }, secretKey, { expiresIn: '9h' });
         res.status(201).json({ token: token });
     } catch (error) {
         console.error(error);
+
+        // Check if the error is due to validation (e.g., unique constraint violation)
+        if (error.code === 11000 && error.keyPattern && error.keyPattern.email === 1) {
+            return res.status(409).json({ message: 'Admin with this email already exists' });
+        }
+
         res.status(500).json({ message: 'Internal server error' });
     }
 });
+
+
 
 // Login route
 router.post('/login', async (req, res) => {
@@ -53,10 +59,10 @@ router.post('/login', async (req, res) => {
 
     try {
         // Find the user by email
-        const user = await Employee.findOne({ email });
+        const user = await Admin.findOne({ email });
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'User not foundyyyy' });
         }
         // Check if the password is correct without hashing the input password again
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -70,11 +76,12 @@ router.post('/login', async (req, res) => {
         }
 
         // Generate and send a JWT token
-        const token = jwt.sign({ EmployeeId: user._id }, secretKey);
+        const token = jwt.sign({ AdminId: user._id }, secretKey);
         res.json({
-            EmployeeId: user.empid,
             login: true,
-            authtoken: token,
+            token: token,
+            admid: user.admid, // assuming you have an 'admid' field in your Admin schema
+
         });
 
     } catch (error) {

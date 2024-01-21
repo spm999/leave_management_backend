@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const adminSchema = new mongoose.Schema({
+  admid: {
+    type: Number,
+    unique: true,
+    default: () => Math.floor(1000 + Math.random() * 9000), // generate a random 4-digit number
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -27,6 +33,7 @@ adminSchema.pre('save', async function (next) {
   } catch (error) {
     next(error);
   }
+  
 });
 
 // Compare provided password with the stored hashed password

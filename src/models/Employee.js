@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const employeeSchema = new mongoose.Schema({
+  empid: {
+    type: Number,
+    unique: true,
+    default: () => Math.floor(1000 + Math.random() * 9000), // generate a random 4-digit number
+    required: true,
+  },
   name: {
     type: String,
     required: true,
